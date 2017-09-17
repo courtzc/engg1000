@@ -5,7 +5,7 @@ void Carry();
 void Drop();
 void Complete();
 
-#include <stdIO>;
+// #include <stdIO>;
 #define sensordistance;
 
 enum Mode
@@ -25,7 +25,7 @@ enum DiscoverMode
   us2Under,
   centring,
   centred
-}
+};
 
 Mode phase;
 DiscoverMode discoverPhase;
@@ -75,7 +75,7 @@ int loadWidth = 0;
 int centringAdjustment = 0;
 
 void Discover() {
-  println("discovering...");
+  Serial.println("discovering...");
   delay(1000); //enter discover code here
   /*
    * move forward until under pallet
@@ -85,12 +85,15 @@ void Discover() {
    * 
    */
 
+       bool US1IsUnder, US2IsUnder;
+
 
    switch(discoverPhase)
    {
      case searching:
       Forward(1);
       // read U/S Sensor 1
+       US1IsUnder = IsSensorUnder(1);
       if (US1IsUnder) {
         discoverPhase = us1Under;
       }
@@ -99,10 +102,12 @@ void Discover() {
        Forward(1);
        loadWidth++;
        // read U/S sensor 1
+       US1IsUnder = IsSensorUnder(1);
+       // read U/S sensor 2
+       US2IsUnder = IsSensorUnder(2);
        if (!US1IsUnder && ! US2IsUnder) {
         discoverPhase = robotWiderThanLoad;
        }
-       // read U/S sensor 2
        if (US2IsUnder) {
         discoverPhase = us2Under;
        }
@@ -111,6 +116,7 @@ void Discover() {
        Forward(1);
        centringAdjustment++;
        // Read U/S sensor 2
+       US2IsUnder = IsSensorUnder(2);
        if (US2IsUnder) {
         discoverPhase = centring;
        }
@@ -120,13 +126,15 @@ void Discover() {
        loadWidth++;
        centringAdjustment++;
        // read U/S sensor 1
+       US1IsUnder = IsSensorUnder(1);
        // read U/S sensor 2
+       US2IsUnder = IsSensorUnder(2);
        if (!US1IsUnder) {
         discoverPhase = centring;
        }
        break;
      case centring:
-       Backwards(underTogether/2);
+       Backwards(centringAdjustment/2);
        discoverPhase = centred;
        break;
      case centred:
@@ -136,18 +144,26 @@ void Discover() {
 
 }
 
+bool IsSensorUnder(int sensor)
+{
+  // read sensor
+  // check difference
+  // return distance < threshold
+  return false;
+}
+
 void Forward(int distance)
 {
   // do the forward thing
 }
 
-void Backward(int distance)
+void Backwards(int distance)
 {
   Forward(-1 * distance);
 }
 
 void Lift() {
-  println("lifting...");
+  Serial.println("lifting...");
   delay(1000); //enter lift code here
   /*
    * 
@@ -156,7 +172,7 @@ void Lift() {
 }
 
 void Carry(bool obstacle) {
-  println("carrying...");
+  Serial.println("carrying...");
   if(!obstacle) {
     //motor pins set to forward
     
@@ -190,12 +206,12 @@ void Carry(bool obstacle) {
 }
 
 void Drop() {
-  println("dropping...");
+  Serial.println("dropping...");
   delay(1000);
   phase = complete;
 }
 
 void Complete() {
-  println("delivered.");
+  Serial.println("delivered.");
 }
 
