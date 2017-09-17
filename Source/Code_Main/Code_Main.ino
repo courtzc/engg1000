@@ -17,12 +17,24 @@ enum Mode
   complete
 };
 
+enum DiscoverMode
+{
+  searching,
+  us1Under,
+  robotWiderThanLoad,
+  us2Under,
+  centring,
+  centred
+}
+
 Mode phase;
+DiscoverMode discoverPhase;
 
 void setup() {
   // put your setup code here, to run once:
 
    phase = discover;
+   discoverPhase = searching;
    
 }
 
@@ -58,6 +70,10 @@ void loop() {
    }
 }
 
+// used for centring under pallet
+int loadWidth = 0;
+int centringAdjustment = 0;
+
 void Discover() {
   println("discovering...");
   delay(1000); //enter discover code here
@@ -68,7 +84,66 @@ void Discover() {
    * stop motors when this is true
    * 
    */
-  phase = lift;
+
+
+   switch(discoverPhase)
+   {
+     case searching:
+      Forward(1);
+      // read U/S Sensor 1
+      if (US1IsUnder) {
+        discoverPhase = us1Under;
+      }
+      break;
+     case us1Under:
+       Forward(1);
+       loadWidth++;
+       // read U/S sensor 1
+       if (!US1IsUnder && ! US2IsUnder) {
+        discoverPhase = robotWiderThanLoad;
+       }
+       // read U/S sensor 2
+       if (US2IsUnder) {
+        discoverPhase = us2Under;
+       }
+       break;
+     case robotWiderThanLoad:
+       Forward(1);
+       centringAdjustment++;
+       // Read U/S sensor 2
+       if (US2IsUnder) {
+        discoverPhase = centring;
+       }
+       break;
+     case us2Under:
+       Forward(1);
+       loadWidth++;
+       centringAdjustment++;
+       // read U/S sensor 1
+       // read U/S sensor 2
+       if (!US1IsUnder) {
+        discoverPhase = centring;
+       }
+       break;
+     case centring:
+       Backwards(underTogether/2);
+       discoverPhase = centred;
+       break;
+     case centred:
+      phase = lift;
+      break;
+   }
+
+}
+
+void Forward(int distance)
+{
+  // do the forward thing
+}
+
+void Backward(int distance)
+{
+  Forward(-1 * distance);
 }
 
 void Lift() {
