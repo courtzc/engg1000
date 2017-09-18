@@ -1,9 +1,13 @@
+int loadWidth = 0;
+int centringAdjustment = 0;
+int usSensor1Pin = 6; //check position
+int usSensor2Pin = 7; //check position
+int sensorValue;
+int distance;
+int threshold;
+
 bool obstacleExists = false;
-void Discover();
-void Lift();
-void Carry();
-void Drop();
-void Complete();
+
 
 // #include <stdIO>;
 #define sensordistance;
@@ -35,8 +39,8 @@ void setup() {
 
    phase = discover;
    discoverPhase = searching;
-   pinMode(sensorPin, INPUT);
-   
+   pinMode(usSensor1Pin, INPUT);
+   pinMode(usSensor2Pin, INPUT);  
 }
 
 
@@ -64,11 +68,7 @@ void loop() {
 }
 
 // used for centring under pallet
-int loadWidth = 0;
-int centringAdjustment = 0;
-int usSensorPin1 = 0;
-int usSensorPin2 = 0;
-int sensorValue;
+
 
 void Discover() {
   Serial.println("discovering...");
@@ -81,8 +81,7 @@ void Discover() {
    {
      case searching:
       Forward(1);
-         sensorValue = digitalRead(usSensorPin1);
-       US1IsUnder = IsSensorUnder(1);
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
       if (US1IsUnder) {
         discoverPhase = us1Under;
       }
@@ -90,11 +89,9 @@ void Discover() {
      case us1Under:
        Forward(1);
        loadWidth++;
-         sensorValue = digitalRead(usSensorPin1);
-       US1IsUnder = IsSensorUnder(1);
-         sensorValue = digitalRead(usSensorPin2);
-       US2IsUnder = IsSensorUnder(2);
-       if (!US1IsUnder && ! US2IsUnder) {
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
+       if (!US1IsUnder && !US2IsUnder) {
         discoverPhase = robotWiderThanLoad;
        }
        if (US2IsUnder) {
@@ -104,8 +101,7 @@ void Discover() {
      case robotWiderThanLoad:
        Forward(1);
        centringAdjustment++;
-         sensorValue = digitalRead(usSensorPin2);
-       US2IsUnder = IsSensorUnder(2);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
        if (US2IsUnder) {
         discoverPhase = centring;
        }
@@ -114,10 +110,8 @@ void Discover() {
        Forward(1);
        loadWidth++;
        centringAdjustment++;
-         sensorValue = digitalRead(usSensorPin1);
-       US1IsUnder = IsSensorUnder(1);
-         sensorValue = digitalRead(usSensorPin2);
-       US2IsUnder = IsSensorUnder(2);
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
        if (!US1IsUnder) {
         discoverPhase = centring;
        }
@@ -133,18 +127,8 @@ void Discover() {
 
 }
 
-bool IsSensor1Under(int usSensorPin1) {
-      sensorValue = digitalRead(usSensorPin1);
-     if (distance < threshold) {
-      return true;
-     }
-     else {
-      return false;
-     }
-}
-
-bool IsSensor2Under (int usSensorPin2) {
-     sensorValue = digitalRead(usSensorPin2);
+bool IsSensorUnder(int sensorPin) {
+      sensorValue = digitalRead(sensorPin);
      if (distance < threshold) {
       return true;
      }
