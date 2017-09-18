@@ -5,6 +5,23 @@ void Carry();
 void Drop();
 void Complete();
 
+int pwmDutyCycle;
+// Set the motor pins appropriately
+    // Use the motor logic from lectures
+    
+    // Pin1  Pin2  Motor
+    //  0     0    Idle
+    //  0     5v   Forward
+    //  5v    0    Reverse
+    //  5v    5v   Idle
+    
+    // RightMotor  LeftMotor  Direction
+    //    For        For      Forward
+    //    For        Rev      Turn Left
+    //    Rev        For      Turn Right
+    //    Rev        Rev      Backwards
+
+
 // #include <stdIO>;
 #define sensordistance;
 
@@ -32,6 +49,12 @@ DiscoverMode discoverPhase;
 
 void setup() {
   // put your setup code here, to run once:
+  
+  //Configuration the motor pins //Check with the tutor
+  pinMode(rightMotorLogicPin1, OUTPUT);
+  pinMode(rightMotorLogicPin2, OUTPUT);
+  pinMode(leftMotorLogicPin1, OUTPUT);
+  pinMode(leftMotorLogicPin2, OUTPUT);
 
    phase = discover;
    discoverPhase = searching;
@@ -41,7 +64,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
   /*
   5 Phases of the operation
   - Discover load
@@ -87,19 +109,47 @@ void Discover() {
 
        bool US1IsUnder, US2IsUnder;
 
-
    switch(discoverPhase)
    {
      case searching:
-      Forward(1);
+      //Forward(1);
+      pwmDutyCycle = 127;// Motor speed for wheels at 50%
+      Serial.println("Speed = 50%");
+      
+      /*//Reset all of the pins if you want the wheels to move left right forward back etc
+      analogWrite(rightMotorLogicPin1, 0);
+      analogWrite(rightMotorLogicPin2, 0);
+      analogWrite(leftMotorLogicPin1, 0);
+      analogWrite(leftMotorLogicPin2, 0);*/
+
+      // Set the motor pins appropriately
+      // Use the motor logic from lectures
+      
+      // Pin1  Pin2  Motor
+      //  0     0    Idle
+      //  0     5v   Forward
+      //  5v    0    Reverse
+      //  5v    5v   Idle
+      
+      // RightMotor  LeftMotor  Direction
+      //    For        For      Forward
+      //    For        Rev      Turn Left
+      //    Rev        For      Turn Right
+      //    Rev        Rev      Backwards
+
+      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+      analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+      analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+    //}
+      
       // read U/S Sensor 1
        US1IsUnder = IsSensorUnder(1);
       if (US1IsUnder) {
         discoverPhase = us1Under;
       }
       break;
+      
      case us1Under:
-       Forward(1);
        loadWidth++;
        // read U/S sensor 1
        US1IsUnder = IsSensorUnder(1);
@@ -112,8 +162,14 @@ void Discover() {
         discoverPhase = us2Under;
        }
        break;
+       
      case robotWiderThanLoad:
-       Forward(1);
+       //Forward(1);
+       pwmDutyCycle = 127;// Motor speed for wheels at 50%
+       //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+    //}
        centringAdjustment++;
        // Read U/S sensor 2
        US2IsUnder = IsSensorUnder(2);
@@ -121,8 +177,14 @@ void Discover() {
         discoverPhase = centring;
        }
        break;
+       
      case us2Under:
-       Forward(1);
+       //Forward(1);
+       pwmDutyCycle = 127;// Motor speed for wheels at 50%
+      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+      //}
        loadWidth++;
        centringAdjustment++;
        // read U/S sensor 1
@@ -133,11 +195,20 @@ void Discover() {
         discoverPhase = centring;
        }
        break;
+       
      case centring:
+       //Backward(1);
+       pwmDutyCycle = 127; //Motor speed for wheels at 50%
+       //if(currentDirection == 'b'){  THIS IS FOR MOVING BACKWARDs
+      analogWrite(rightMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
+      analogWrite(leftMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
+    //}   
        Backwards(centringAdjustment/2);
        discoverPhase = centred;
        break;
+       
      case centred:
+      pwmDutyCycle = 0;
       phase = lift;
       break;
    }
