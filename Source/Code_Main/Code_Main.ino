@@ -5,15 +5,6 @@ void Carry();
 void Drop();
 void Complete();
 
-//CHANGE THE MOTOR PINS ACCORDING TO THE ARDUINO MEGA THIS IS FOR THE UNO
-// -------------------------------------------------------
-// Global Variables //Change the global variables below for the arduino mega
-// -------------------------------------------------------
-/*int rightMotorLogicPin1 = 11;    
-int rightMotorLogicPin2 = 9;  
-int leftMotorLogicPin1 = 10;    
-int leftMotorLogicPin2 = 3;*/
-
 // #include <stdIO>;
 #define sensordistance;
 
@@ -39,156 +30,8 @@ enum DiscoverMode
 Mode phase;
 DiscoverMode discoverPhase;
 
-// -------------------------------------------------------
-// Subroutine: Initialize Motor Pins
-// -------------------------------------------------------
-void initializeMotorPins(){ // Change the motor pins to the ones on the arduino mega
-  /*pinMode(rightMotorLogicPin1, OUTPUT);
-  pinMode(rightMotorLogicPin2, OUTPUT);
-  pinMode(leftMotorLogicPin1, OUTPUT);
-  pinMode(leftMotorLogicPin2, OUTPUT);
-
-  //Print the motor pin configuration for wiring
-  Serial.println("Right Motor Pin 1 = 11");
-  Serial.println("Right Motor Pin 2 = 9");
-  Serial.println("Left Motor Pin 1 = 10");
-  Serial.println("Left Motor Pin 2 = 3");*/
-}
-
-// -------------------------------------------------------
-// Function: Receive Byte
-// -------------------------------------------------------
-char receiveCommand(){
-  char incomingByte = 0;
-
-  //See if there's incoming serial data:
-  if(Serial.available()>0){
-  
-    //Read the oldest byte in the serial buffer:
-    incomingByte = Serial.read(); 
-  }
-  return incomingByte;
-}
-
-// -------------------------------------------------------
-// Function: Update Direction
-// -------------------------------------------------------
-char updateDirection(char command, char currentDirection){
-   //Is this a direction; 'f' 'b' 'l' 'r'
-    if(command == 'f'){
-      currentDirection = 'f';
-      Serial.println("Forwards");
-    }
-    //Just forward for now
-    /*if(command == 'b'){
-      currentDirection = 'b';
-      Serial.println("Backwards");
-    }
-    if(command == 'l'){
-      currentDirection = 'l';
-      Serial.println("Turn Left");
-    }
-    if(command == 'r'){
-      currentDirection = 'r';
-      Serial.println("Turn Right");
-    }*/
-    
-    return currentDirection;
-}
-
-// -------------------------------------------------------
-// Function: Update Speed
-// -------------------------------------------------------
-int updateSpeed(char command, int pwmDutyCycle){
-  //Is this a motor speed '0' - '5'
-    if(command == '0'){
-      pwmDutyCycle = 0;
-      Serial.println("Stop");
-    }
-    if(command == '1'){
-      pwmDutyCycle = 25;
-      Serial.println("Speed = 10%");
-    }
-    if(command == '2'){
-      pwmDutyCycle = 51;
-      Serial.println("Speed = 20%");
-    }
-    if(command == '3'){
-      pwmDutyCycle = 76;
-      Serial.println("Speed = 30%");
-    }
-    if(command == '4'){
-      pwmDutyCycle = 102;
-      Serial.println("Speed = 40%");
-    }
-    if(command == '5'){
-      pwmDutyCycle = 127;
-      Serial.println("Speed = 50%");
-    }
-    return pwmDutyCycle;
-}
-
-// -------------------------------------------------------
-// Subroutine: Set Motor Pins
-// -------------------------------------------------------
-void setMotorPins(int currentDirection, int pwmDutyCycle){
-  //Reset all of the pins
-    analogWrite(rightMotorLogicPin1, 0);
-    analogWrite(rightMotorLogicPin2, 0);
-    analogWrite(leftMotorLogicPin1, 0);
-    analogWrite(leftMotorLogicPin2, 0);
-
-    // Set the motor pins appropriately
-    // Use the motor logic from lectures
-    //CHANGE THE MOTOR PINS ACCORDING TO THE ARDUINO MEGA THIS IS FOR THE UNO
-    
-    // Pin1  Pin2  Motor
-    //  0     0    Idle
-    //  0     5v   Forward
-    //  5v    0    Reverse
-    //  5v    5v   Idle
-    
-    // RightMotor  LeftMotor  Direction
-    //    For        For      Forward
-    //    For        Rev      Turn Left
-    //    Rev        For      Turn Right
-    //    Rev        Rev      Backwards
-
-    if(currentDirection == 'f'){
-      analogWrite(rightMotorLogicPin2, pwmDutyCycle);
-      analogWrite(leftMotorLogicPin2, pwmDutyCycle);
-    }
-    
-    /*if(currentDirection == 'b'){
-      analogWrite(rightMotorLogicPin1, pwmDutyCycle);
-      analogWrite(leftMotorLogicPin1, pwmDutyCycle);
-    }
-
-    if(currentDirection == 'l'){
-      analogWrite(rightMotorLogicPin2, pwmDutyCycle);
-      analogWrite(leftMotorLogicPin1, pwmDutyCycle);
-    }
-
-    if(currentDirection == 'r'){
-      analogWrite(rightMotorLogicPin1, pwmDutyCycle);
-      analogWrite(leftMotorLogicPin2, pwmDutyCycle);
-    }*/
-}
-
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-
-  //Print the program details
-  Serial.println("-------------------------------------");
-  Serial.println("Program: Motor Controller"); 
-  Serial.println("Initializing ...");
-
-  //Call a subroutine to initialiez the motor pins
-  initializeMotorPins();
-
-  //Initialization completed successfully
-  Serial.println("Initialization complete");
 
    phase = discover;
    discoverPhase = searching;
@@ -198,34 +41,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //THIS IS FOR SETTING SPEED AND DIRECTION
-  int pwmDutyCycle = 0;
-  char currentDirection = 'x'; 
-  char command = 0;
-  bool keyboardControl = true;
-  
-  // Control the motors from the keyboard
-  while (keyboardControl) {
-    
-    // Wait for a command from the keyboard
-    command = receiveCommand(); 
-    
-    // Update the direction of the robot
-    currentDirection = updateDirection(command, currentDirection);
-    
-    // Update the speed of the robot
-    pwmDutyCycle = updateSpeed(command, pwmDutyCycle);
-    
-    // Set the motor pins according to speed and direction
-    setMotorPins(currentDirection, pwmDutyCycle);
-    
-    // Was this an exit command
-    if (command == 'x') keyboardControl = false;
 
-    //Small delay for a character to arrive 
-    delay(10);
-  }
-  
   /*
   5 Phases of the operation
   - Discover load
@@ -252,9 +68,6 @@ void loop() {
       Complete();
       break;
    }
-   // Terminate the program
- Serial.println("bye");
- while(true);
 }
 
 // used for centring under pallet
