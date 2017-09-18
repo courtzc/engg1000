@@ -6,6 +6,10 @@ void Drop();
 void Complete();
 
 int pwmDutyCycle;
+int rightMotorLogicPin1 = 11;
+int rightMotorLogicPin2 = 9;
+int leftMotorLogicPin1 = 10;
+int leftMotorLogicPin2 = 3;
 // Set the motor pins appropriately
     // Use the motor logic from lectures
     
@@ -121,21 +125,6 @@ void Discover() {
       analogWrite(rightMotorLogicPin2, 0);
       analogWrite(leftMotorLogicPin1, 0);
       analogWrite(leftMotorLogicPin2, 0);*/
-
-      // Set the motor pins appropriately
-      // Use the motor logic from lectures
-      
-      // Pin1  Pin2  Motor
-      //  0     0    Idle
-      //  0     5v   Forward
-      //  5v    0    Reverse
-      //  5v    5v   Idle
-      
-      // RightMotor  LeftMotor  Direction
-      //    For        For      Forward
-      //    For        Rev      Turn Left
-      //    Rev        For      Turn Right
-      //    Rev        Rev      Backwards
 
       //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
