@@ -1,12 +1,53 @@
-bool obstacleExists = false;
-void Discover();
-void Lift();
-void Carry();
-void Drop();
-void Complete();
+//=======================================================
+// ENGG1000 - Warehouse Droid Team 12
+// Droid Code
+// Written by Courtney Coates('s Dad) and Jason Jeon
+// September 2017
+//======================================================= 
 
-// #include <stdIO>;
+//-----------------------------------------------
+// Set these parameters before each run
+//-----------------------------------------------
+
+const bool obstacleExists = false;
+const int loadWeight = 1;
+
+
+//-----------------------------------------------
+// Constants
+//-----------------------------------------------
+
+const int usSensor1Pin = 6; //check position
+const int usSensor2Pin = 7; //check position
+const int threshold = 100; //define threshold
+const int mgSensorPin = 8; //check position
+const int RIGHT = 90;
+const int LEFT = -90;
+
+
+//-----------------------------------------------
+// Variables
+//-----------------------------------------------
+
+int loadWidth = 0;
+int centringAdjustment = 0;
+int sensorValue;
+int distance;
+int mgTagsFound = 0;
+bool tagRecentlyFound = false;
+bool tag1ActionComplete, tag2ActionComplete, tag3ActionComplete, tag4ActionComplete, tag5ActionComplete = false;
+
+
+//-----------------------------------------------
+// Defintions and Inclusions
+//-----------------------------------------------
+
 #define sensordistance;
+
+
+//-----------------------------------------------
+// Defintions of Phases
+//-----------------------------------------------
 
 enum Mode
 {
@@ -16,6 +57,11 @@ enum Mode
   drop,
   complete
 };
+
+
+//-----------------------------------------------
+// Defintions of Sub-Phases
+//-----------------------------------------------
 
 enum DiscoverMode
 {
@@ -27,29 +73,55 @@ enum DiscoverMode
   centred
 };
 
+enum LiftMode
+{
+  contracted,
+  extending,
+  weight1kg,
+  weight2kg,
+  extended,
+  contracting
+};
+
+enum CarryMode
+{
+  waiting,
+  deliveringWithoutObstacle,
+  deliveringWithObstacle,
+  deliveryLocation
+};
+
+//-----------------------------------------------
+// Modes
+//-----------------------------------------------
+
 Mode phase;
 DiscoverMode discoverPhase;
+LiftMode liftPhase;
+CarryMode carryPhase;
+
+
+//-----------------------------------------------
+// Inital Conditions
+//-----------------------------------------------
 
 void setup() {
-  // put your setup code here, to run once:
-
+  
    phase = discover;
    discoverPhase = searching;
-   
+   liftPhase = contracted;
+   carryPhase = waiting;
+   pinMode(usSensor1Pin, INPUT);
+   pinMode(usSensor2Pin, INPUT);  
 }
 
 
-void loop() {
-  // put your main code here, to run repeatedly:
+//-----------------------------------------------
+// Phases of Delivery 
+//-----------------------------------------------
 
-  /*
-  5 Phases of the operation
-  - Discover load
-  - Lift
-  - Carry
-  - Drop
-  - Complete
-   */
+void loop() {
+
    switch (phase)
    {
     case discover:
@@ -70,42 +142,32 @@ void loop() {
    }
 }
 
-// used for centring under pallet
-int loadWidth = 0;
-int centringAdjustment = 0;
+//-----------------------------------------------
+// Discovery Phase
+//-----------------------------------------------
 
 void Discover() {
+  
   Serial.println("discovering...");
-  delay(1000); //enter discover code here
-  /*
-   * move forward until under pallet
-   * drive forward until both sensor 1 and 2 distance < sensordistance
-   * do, until this and this
-   * stop motors when this is true
-   * 
-   */
-
-       bool US1IsUnder, US2IsUnder;
-
+  delay(1000);
+  
+   bool US1IsUnder, US2IsUnder;
 
    switch(discoverPhase)
    {
      case searching:
-      Forward(1);
-      // read U/S Sensor 1
-       US1IsUnder = IsSensorUnder(1);
+      //Forward(1);
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
       if (US1IsUnder) {
         discoverPhase = us1Under;
       }
       break;
      case us1Under:
-       Forward(1);
+       //Forward(1);
        loadWidth++;
-       // read U/S sensor 1
-       US1IsUnder = IsSensorUnder(1);
-       // read U/S sensor 2
-       US2IsUnder = IsSensorUnder(2);
-       if (!US1IsUnder && ! US2IsUnder) {
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
+       if (!US1IsUnder && !US2IsUnder) {
         discoverPhase = robotWiderThanLoad;
        }
        if (US2IsUnder) {
@@ -113,10 +175,9 @@ void Discover() {
        }
        break;
      case robotWiderThanLoad:
-       Forward(1);
+       //Forward(1);
        centringAdjustment++;
-       // Read U/S sensor 2
-       US2IsUnder = IsSensorUnder(2);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
        if (US2IsUnder) {
         discoverPhase = centring;
        }
@@ -125,16 +186,14 @@ void Discover() {
        Forward(1);
        loadWidth++;
        centringAdjustment++;
-       // read U/S sensor 1
-       US1IsUnder = IsSensorUnder(1);
-       // read U/S sensor 2
-       US2IsUnder = IsSensorUnder(2);
+       US1IsUnder = IsSensorUnder(usSensor1Pin);
+       US2IsUnder = IsSensorUnder(usSensor2Pin);
        if (!US1IsUnder) {
         discoverPhase = centring;
        }
        break;
      case centring:
-       Backwards(centringAdjustment/2);
+       //Backwards(centringAdjustment/2);
        discoverPhase = centred;
        break;
      case centred:
@@ -143,36 +202,155 @@ void Discover() {
    }
 
 }
+   
+//-----------------------------------------------
+// Lifting Phase
+//-----------------------------------------------
 
-bool IsSensorUnder(int sensor)
-{
-  // read sensor
-  // check difference
-  // return distance < threshold
-  return false;
-}
-
-void Forward(int distance)
-{
-  // do the forward thing
-}
-
-void Backwards(int distance)
-{
-  Forward(-1 * distance);
-}
+const int rotationsFor1kg = 15;
+const int rotationsFor2kg = 28;
 
 void Lift() {
+  
   Serial.println("lifting...");
   delay(1000); //enter lift code here
-  /*
-   * 
-   */
-  phase = carry;
+  
+  switch(liftPhase) {
+    case contracted:
+      liftPhase = extending;
+      break;
+    case extending:
+    if(loadWeight == 1) {
+      liftPhase = weight1kg;
+    }
+    else {
+      liftPhase = weight2kg;
+    }
+    break;
+   case weight1kg:
+      //code for motors
+      //lifting motors Up for rotationsFor1kg
+      liftPhase = extended;
+      break;
+   case weight2kg:
+      //code for motors
+      //lifting motors Up for rotationsFor2kg
+      liftPhase = extended;
+      break;
+   case extended:
+      phase = carry;
+      break;
+  }
+
+
+
 }
+
+//-----------------------------------------------
+// Carrying Phase
+//-----------------------------------------------
 
 void Carry(bool obstacle) {
   Serial.println("carrying...");
+
+  switch(carryPhase) {
+    case waiting:
+      mgTagsFound = 0;
+      tagRecentlyFound = false;
+      carryPhase = obstacle ? deliveringWithObstacle : deliveringWithoutObstacle;
+      break;
+    case deliveringWithObstacle:
+    // Dodge that
+        if(mgSensorRead(mgSensorPin)) 
+        {
+          if (!tagRecentlyFound) 
+          {
+            mgTagsFound++;
+            tagRecentlyFound = true;
+          }
+        }
+        else 
+        {
+          tagRecentlyFound = false;
+        }
+        
+        switch (mgTagsFound)
+        {
+          case 0:
+            Forward(1);
+            break;
+          case 1:
+            if(!tag1ActionComplete)
+            {
+              Turn(RIGHT);
+              tag1ActionComplete = true;
+            }
+            Forward(1);
+            break;
+          case 2:
+            if(!tag2ActionComplete)
+            {
+              Turn(LEFT);
+              tag2ActionComplete = true;
+            }
+            Forward(1);
+            break;
+          case 3:
+            if(!tag3ActionComplete)
+            {
+              Turn(LEFT);
+              tag3ActionComplete = true;
+            }
+            Forward(1);
+            break;
+          case 4:
+            if(!tag4ActionComplete)
+            {
+              Turn(RIGHT);
+              tag4ActionComplete = true;
+            }
+            Forward(1);
+            break;
+          case 5:
+            if(!tag5ActionComplete)
+            {
+              tag5ActionComplete = true;
+              carryPhase = deliveryLocation;
+            }
+            break;
+        }
+                 
+      break;
+      
+    case deliveringWithoutObstacle:
+    // The obstacle is a lie
+        if(mgSensorRead(mgSensorPin)) 
+        {
+          if (!tagRecentlyFound) 
+          {
+            mgTagsFound++;
+            tagRecentlyFound = true;
+          }
+        }
+        else 
+        {
+          tagRecentlyFound = false;
+        }
+        
+        if(mgTagsFound == 3)
+        {
+          carryPhase = deliveryLocation;
+        }
+        else 
+        {
+          Forward(1);
+        }
+      break;
+      
+    case deliveryLocation:
+      phase = drop;
+      break;
+  };
   if(!obstacle) {
     //motor pins set to forward
     
@@ -205,13 +383,113 @@ void Carry(bool obstacle) {
   phase = drop;
 }
 
+//-----------------------------------------------
+// Dropping Phase
+//-----------------------------------------------
+
 void Drop() {
   Serial.println("dropping...");
   delay(1000);
-  phase = complete;
+
+  switch(liftPhase) {
+    case extended:
+      liftPhase = contracting;
+      break;
+    case contracting:
+    if(loadWeight == 1) {
+      liftPhase = weight1kg;
+    }
+    else {
+      liftPhase = weight2kg;
+    }
+    break;
+   case weight1kg:
+      //code for motors
+      //lifting motors Down for rotationsFor1kg
+      liftPhase = contracted;
+      break;
+   case weight2kg:
+      //code for motors
+      //lifting motors Down for rotationsFor2kg
+      liftPhase = contracted;
+      break;
+   case contracted:
+      phase = complete;
+      break;
+  }
+
 }
+
+//-----------------------------------------------
+// Complete Phase
+//-----------------------------------------------
 
 void Complete() {
   Serial.println("delivered.");
 }
+
+
+
+//---------------------------------------------
+// Sensor Subroutines
+//---------------------------------------------
+
+// Ultrasonic Sensors
+// TODO: U/S SENSOR READING
+    bool IsSensorUnder(int sensorPin) {
+          sensorValue = digitalRead(sensorPin);
+          // interpret the sensor value to work out if we're under
+         if (distance < threshold) {
+          return true;
+         }
+         else {
+          return false;
+         }
+    }
+
+// Magnetic Sensor
+// TODO: MAG SENSOR READING
+    bool mgSensorRead(int sensorPin) {
+          sensorValue = digitalRead(sensorPin);
+          // interpret the sensor value to work out if we've found a tag
+          bool foundTag = true;
+
+          return foundTag;
+    }
+
+
+
+
+//-----------------------------------------------
+// Wheel Motor Subroutines
+//-----------------------------------------------
+
+    void Forward(int distance)
+    {
+      // do the forward thing
+    }
+    
+    void Backwards(int distance)
+    {
+      //Forward(-1 * distance);
+    }
+
+    void Turn(int angle)
+    {
+      //TODO turn logic
+    }
+
+//-----------------------------------------------
+// Lift Motor Subroutines
+//-----------------------------------------------
+
+    void Up(int distance)
+    {
+      // do the forward thing
+    }
+    
+    void Down(int distance)
+    {
+      //Up(-1 * distance);
+    }
 
