@@ -1,4 +1,4 @@
-#include "MeAuriga.h"
+#include "MeAuriga.h" 
 #include <Wire.h>
 #include <SoftwareSerial.h>
 
@@ -22,8 +22,11 @@
  * </pre>
  */
 
-MeEncoderNew motor1(0x09, SLOT1);   //  motor at slot1 ALSO NOT SURE IF MeEncoder or MeEncoderNew ALSO NOT SURE IF BOTH FLOAT VALUE IS MEANT TO BE THE SAME
+//CHANGE THE SLOT ACCORDING TO THE CORRESPONDING SLOT FOR OUR BOARD!!!
+MeEncoderNew motor1(0x09, SLOT1);   //  motor at slot1 ALSO NOT SURE IF MeEncoder or MeEncoderNew 
+//If this doesnt work try 0x02 i.e. MeEncoderNew motor1(0x02, SLOT1);
 MeEncoderNew motor2(0x09, SLOT2);   //  motor at slot2 ALSO NOT SURE IF MeEncoder or MeEncoderNew
+//If this doesnt work try 0x02 i.e. MeEncoderNew motor2(0x02, SLOT2);
 
 bool obstacleExists = false;
 void Discover();
@@ -121,8 +124,8 @@ void Discover() {
    {
      case searching:
       //Forward(1);
-      motor1.runSpeed(150);
-      motor2.runSpeed(150);
+      motor1.runSpeed(150); //if this doesnt work try float speed as 180 
+      motor2.runSpeed(150);//if this doesnt work try float speed as 180 
     //}
       
       // read U/S Sensor 1
