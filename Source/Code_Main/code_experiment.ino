@@ -1,30 +1,39 @@
+#include "MeAuriga.h" 
+#include <Wire.h>
+#include <SoftwareSerial.h>
+
+/**
+ * \par Copyright (C), 2012-2016, MakeBlock
+ * @file    EncoderMotorTestRunSpeed.ino
+ * @author  MakeBlock
+ * @version V1.0.0
+ * @date    2015/11/19
+ * @brief   Description: this file is sample code for Encoder Motor  device.
+ *
+ * Function List:
+ *
+ *    1. void MeEncoderMotor::begin();
+ *    2. boolean MeEncoderMotor::runSpeed(float speed);
+ *
+ * \par History:
+ * <pre>
+ * <Author>     <Time>        <Version>      <Descr>
+ * forfish      2015/11/19    1.0.0          add some descriptions
+ * </pre>
+ */
+
+//CHANGE THE SLOT ACCORDING TO THE CORRESPONDING SLOT FOR OUR BOARD!!!
+MeEncoderNew motor1(0x09, SLOT1);   //  motor at slot1 ALSO NOT SURE IF MeEncoder or MeEncoderNew 
+//If this doesnt work try 0x02 i.e. MeEncoderNew motor1(0x02, SLOT1);
+MeEncoderNew motor2(0x09, SLOT2);   //  motor at slot2 ALSO NOT SURE IF MeEncoder or MeEncoderNew
+//If this doesnt work try 0x02 i.e. MeEncoderNew motor2(0x02, SLOT2);
+
 bool obstacleExists = false;
 void Discover();
 void Lift();
 void Carry();
 void Drop();
 void Complete();
-
-int pwmDutyCycle;
-int rightMotorLogicPin1 = 11;
-int rightMotorLogicPin2 = 9;
-int leftMotorLogicPin1 = 10;
-int leftMotorLogicPin2 = 3;
-// Set the motor pins appropriately
-    // Use the motor logic from lectures
-    
-    // Pin1  Pin2  Motor
-    //  0     0    Idle
-    //  0     5v   Forward
-    //  5v    0    Reverse
-    //  5v    5v   Idle
-    
-    // RightMotor  LeftMotor  Direction
-    //    For        For      Forward
-    //    For        Rev      Turn Left
-    //    Rev        For      Turn Right
-    //    Rev        Rev      Backwards
-
 
 // #include <stdIO>;
 #define sensordistance;
@@ -54,11 +63,9 @@ DiscoverMode discoverPhase;
 void setup() {
   // put your setup code here, to run once:
   
-  //Configuration the motor pins //Check with the tutor
-  pinMode(rightMotorLogicPin1, OUTPUT);
-  pinMode(rightMotorLogicPin2, OUTPUT);
-  pinMode(leftMotorLogicPin1, OUTPUT);
-  pinMode(leftMotorLogicPin2, OUTPUT);
+  motor1.begin();
+  motor2.begin();
+  Serial.begin(9600);
 
    phase = discover;
    discoverPhase = searching;
@@ -117,18 +124,8 @@ void Discover() {
    {
      case searching:
       //Forward(1);
-      pwmDutyCycle = 127;// Motor speed for wheels at 50%
-      Serial.println("Speed = 50%");
-      
-      /*//Reset all of the pins if you want the wheels to move left right forward back etc
-      analogWrite(rightMotorLogicPin1, 0);
-      analogWrite(rightMotorLogicPin2, 0);
-      analogWrite(leftMotorLogicPin1, 0);
-      analogWrite(leftMotorLogicPin2, 0);*/
-
-      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
-      analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
-      analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+      motor1.runSpeed(150); //if this doesnt work try float speed as 180 
+      motor2.runSpeed(150);//if this doesnt work try float speed as 180 
     //}
       
       // read U/S Sensor 1
@@ -154,10 +151,8 @@ void Discover() {
        
      case robotWiderThanLoad:
        //Forward(1);
-       pwmDutyCycle = 127;// Motor speed for wheels at 50%
-       //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
-       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
-       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+       motor1.runSpeed(150);
+       motor2.runSpeed(150);
     //}
        centringAdjustment++;
        // Read U/S sensor 2
@@ -169,10 +164,8 @@ void Discover() {
        
      case us2Under:
        //Forward(1);
-       pwmDutyCycle = 127;// Motor speed for wheels at 50%
-      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
-       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
-       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+       motor1.runSpeed(150);
+       motor2.runSpeed(150);
       //}
        loadWidth++;
        centringAdjustment++;
@@ -187,17 +180,17 @@ void Discover() {
        
      case centring:
        //Backward(1);
-       pwmDutyCycle = 127; //Motor speed for wheels at 50%
-       //if(currentDirection == 'b'){  THIS IS FOR MOVING BACKWARDs
-      analogWrite(rightMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
-      analogWrite(leftMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
+       motor1.runSpeed(-150);
+       motor2.runSpeed(-150);
     //}   
        Backwards(centringAdjustment/2);
        discoverPhase = centred;
        break;
        
      case centred:
-      pwmDutyCycle = 0;
+      //Stoping the motors for no movement of the droid
+      motor1.runSpeed(0);
+      motor2.runSpeed(0);
       phase = lift;
       break;
    }
