@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //-------------------------------------------------------
 // ENGG1000 - Warehouse Droid Team 12
 // Droid Code
@@ -41,6 +42,37 @@ bool tag1ActionComplete, tag2ActionComplete, tag3ActionComplete, tag4ActionCompl
 // Defintions and Inclusions
 //-----------------------------------------------
 
+=======
+bool obstacleExists = false;
+void Discover();
+void Lift();
+void Carry();
+void Drop();
+void Complete();
+
+int pwmDutyCycle;
+int rightMotorLogicPin1 = 11;
+int rightMotorLogicPin2 = 9;
+int leftMotorLogicPin1 = 10;
+int leftMotorLogicPin2 = 3;
+// Set the motor pins appropriately
+    // Use the motor logic from lectures
+    
+    // Pin1  Pin2  Motor
+    //  0     0    Idle
+    //  0     5v   Forward
+    //  5v    0    Reverse
+    //  5v    5v   Idle
+    
+    // RightMotor  LeftMotor  Direction
+    //    For        For      Forward
+    //    For        Rev      Turn Left
+    //    Rev        For      Turn Right
+    //    Rev        Rev      Backwards
+
+
+// #include <stdIO>;
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
 #define sensordistance;
 #include <Arduino.h>
 #include <MeAuriga.h>
@@ -110,6 +142,17 @@ LiftMode liftPhase;
 CarryMode carryPhase;
 CompleteMode completePhase;
 
+<<<<<<< HEAD
+=======
+void setup() {
+  // put your setup code here, to run once:
+  
+  //Configuration the motor pins //Check with the tutor
+  pinMode(rightMotorLogicPin1, OUTPUT);
+  pinMode(rightMotorLogicPin2, OUTPUT);
+  pinMode(leftMotorLogicPin1, OUTPUT);
+  pinMode(leftMotorLogicPin2, OUTPUT);
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
 
 //-----------------------------------------------
 // Inital Conditions
@@ -129,12 +172,25 @@ void setup()
 }
 
 
+<<<<<<< HEAD
 //-----------------------------------------------
 // Phases of Delivery 
 //-----------------------------------------------
 
 void loop()
 {
+=======
+void loop() {
+  // put your main code here, to run repeatedly:
+  /*
+  5 Phases of the operation
+  - Discover load
+  - Lift
+  - Carry
+  - Drop
+  - Complete
+   */
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
    switch (phase)
    {
     case discover:
@@ -162,23 +218,59 @@ void loop()
 void Discover()
 {
   Serial.println("discovering...");
+<<<<<<< HEAD
   delay(1000);
   
    bool US1IsUnder, US2IsUnder;
+=======
+  delay(1000); //enter discover code here
+  /*
+   * move forward until under pallet
+   * drive forward until both sensor 1 and 2 distance < sensordistance
+   * do, until this and this
+   * stop motors when this is true
+   * 
+   */
+
+       bool US1IsUnder, US2IsUnder;
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
 
    switch(discoverPhase)
    {
      case searching:
       //Forward(1);
+<<<<<<< HEAD
        US1IsUnder = IsSensorUnder(usSensor1Pin);
       if (US1IsUnder)
       {
+=======
+      pwmDutyCycle = 127;// Motor speed for wheels at 50%
+      Serial.println("Speed = 50%");
+      
+      /*//Reset all of the pins if you want the wheels to move left right forward back etc
+      analogWrite(rightMotorLogicPin1, 0);
+      analogWrite(rightMotorLogicPin2, 0);
+      analogWrite(leftMotorLogicPin1, 0);
+      analogWrite(leftMotorLogicPin2, 0);*/
+
+      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+      analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+      analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+    //}
+      
+      // read U/S Sensor 1
+       US1IsUnder = IsSensorUnder(1);
+      if (US1IsUnder) {
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
         discoverPhase = us1Under;
       }
       break;
       
      case us1Under:
+<<<<<<< HEAD
        //Forward(1);
+=======
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
        loadWidth++;
        US1IsUnder = IsSensorUnder(usSensor1Pin);
        US2IsUnder = IsSensorUnder(usSensor2Pin);
@@ -194,6 +286,14 @@ void Discover()
        
      case robotWiderThanLoad:
        //Forward(1);
+<<<<<<< HEAD
+=======
+       pwmDutyCycle = 127;// Motor speed for wheels at 50%
+       //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+    //}
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
        centringAdjustment++;
        US2IsUnder = IsSensorUnder(usSensor2Pin);
        if (US2IsUnder)
@@ -203,7 +303,12 @@ void Discover()
        break;
        
      case us2Under:
-       Forward(1);
+       //Forward(1);
+       pwmDutyCycle = 127;// Motor speed for wheels at 50%
+      //if(currentDirection == 'f'){  THIS IS FOR MOVING FORWARD
+       analogWrite(rightMotorLogicPin2, pwmDutyCycle); //Change pin according to arduino mega
+       analogWrite(leftMotorLogicPin2, pwmDutyCycle); // Change pin according arduino mega
+      //}
        loadWidth++;
        centringAdjustment++;
        US1IsUnder = IsSensorUnder(usSensor1Pin);
@@ -215,11 +320,22 @@ void Discover()
        break;
        
      case centring:
+<<<<<<< HEAD
        //Backwards(centringAdjustment/2);
+=======
+       //Backward(1);
+       pwmDutyCycle = 127; //Motor speed for wheels at 50%
+       //if(currentDirection == 'b'){  THIS IS FOR MOVING BACKWARDs
+      analogWrite(rightMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
+      analogWrite(leftMotorLogicPin1, pwmDutyCycle); //Change pin according to arduino mega
+    //}   
+       Backwards(centringAdjustment/2);
+>>>>>>> ff46accb7570c61202796d486b89a97426cc5e4d
        discoverPhase = centred;
        break;
        
      case centred:
+      pwmDutyCycle = 0;
       phase = lift;
       break;
    }
